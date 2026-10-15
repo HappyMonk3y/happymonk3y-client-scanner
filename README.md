@@ -1,4 +1,4 @@
-# happymonk3y client scanner
+# HappyMonk3y's Client Scanner
 
 A console prop for scripted YouTube videos. All scan messages and results are fictional. It does not inspect Java, processes, memory, files, or the network, and it cannot detect cheating.
 
@@ -10,26 +10,30 @@ Open PowerShell in this folder and run:
 & .\happymonk3y-client-scanner.ps1
 ```
 
-The default run displays scan progress for 120 seconds, then a colored report. Administrator access is not required.
+Each run randomly takes 27-120 seconds, displays a different selection of progress messages, then shows a colored report. Administrator access is not required.
+
+The console uses a bordered header, timestamped progress lines, grouped client/macro/module results, colored status badges, and a final summary.
 
 ## Results
 
-Each run randomly selects one client and always gives that client a `FLAG` result:
+Each run randomly selects one client and always gives that client a `FLAG` result with exactly one occurrence:
 
-- Prestige Client: 1-20 occurrences.
-- Krypton Client: 1-30 occurrences.
-- Doomsday Client: 1-30 occurrences.
+- 198m Client
+- Prestige Client
+- Doomsday Client
+- Krypton Client
+- Argon Client
 
-The other checks each show 1-30 occurrences and randomly receive `FLAG`, `GENERIC`, or `FALSE POSITIVE`:
+Anchor Macro and Double Anchor each show exactly one occurrence. Their results randomly receive `FLAG`, `GENERIC`, or `FALSE POSITIVE`.
+
+The following modules each show 1-30 occurrences and randomly receive `FLAG`, `GENERIC`, or `FALSE POSITIVE`:
 
 - Auto Crystal
 - Auto Hit Crystal
-- Anchor Macro
-- Double Anchor
 - Shield Breaker
-- 198m
 - Hover Totem
 - Auto Totem
+- Inv Totem
 - Totem Refill
 - Fast Place
 
@@ -51,4 +55,4 @@ Use a shorter duration when rehearsing:
 & .\happymonk3y-client-scanner.ps1 -DurationSeconds 1
 ```
 
-Omit that parameter to restore the two-minute run.
+Omit that parameter to restore the random 27-120 second duration.

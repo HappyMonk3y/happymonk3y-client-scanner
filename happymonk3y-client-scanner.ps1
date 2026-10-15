@@ -3,29 +3,68 @@
 [CmdletBinding()]
 param(
     [ValidateRange(0, 600)]
-    [int]$DurationSeconds = 120
+    [int]$DurationSeconds = (Get-Random -Minimum 27 -Maximum 121)
 )
 
 $ErrorActionPreference = 'Stop'
 
+$scannerName = "HappyMonk3y's Client Scanner"
+$panelWidth = 68
+
+function Write-PanelBorder {
+    Write-Host ('  +' + ('-' * ($panelWidth + 2)) + '+') -ForegroundColor DarkCyan
+}
+
+function Write-PanelLine {
+    param([string]$Text = '', [ConsoleColor]$Color = 'Gray')
+    Write-Host '  | ' -ForegroundColor DarkCyan -NoNewline
+    Write-Host $Text.PadRight($panelWidth) -ForegroundColor $Color -NoNewline
+    Write-Host ' |' -ForegroundColor DarkCyan
+}
+
+function Write-ResultRow {
+    param($Row)
+    $color = switch ($Row.Result) {
+        'FLAG' { 'Red' }
+        'GENERIC' { 'Yellow' }
+        'FALSE POSITIVE' { 'DarkGray' }
+    }
+    $label = '{0,-27} {1,5}   ' -f $Row.Check, $Row.Occurrences
+    $badge = '[{0}]' -f $Row.Result
+    Write-Host '  | ' -ForegroundColor DarkCyan -NoNewline
+    Write-Host $label -ForegroundColor Gray -NoNewline
+    Write-Host $badge.PadRight($panelWidth - $label.Length) -ForegroundColor $color -NoNewline
+    Write-Host ' |' -ForegroundColor DarkCyan
+}
+
 Write-Host ''
-Write-Host '  ======================================================' -ForegroundColor DarkCyan
-Write-Host '               happymonk3y client scanner' -ForegroundColor Cyan
-Write-Host '  ======================================================' -ForegroundColor DarkCyan
-Write-Host ''
-Write-Host '  [OK] javaw.exe located' -ForegroundColor Green
-Write-Host '  [OK] Automatic scan started' -ForegroundColor Green
+Write-PanelBorder
+Write-PanelLine
+Write-PanelLine $scannerName Cyan
+Write-PanelLine 'CLIENT SIGNATURES / COMBAT MODULES / INPUT PATTERNS' DarkGray
+Write-PanelLine
+Write-PanelBorder
+Write-PanelLine 'TARGET  javaw.exe                         STATUS  CONNECTED' Green
+Write-PanelBorder
 Write-Host ''
 
-$stages = @(
-    'Connecting to Java runtime',
-    'Enumerating loaded classes',
-    'Inspecting runtime signatures',
-    'Analyzing combat input patterns',
-    'Checking macro indicators',
-    'Correlating detection flags',
-    'Preparing scan report'
+$stagePool = @(
+    'Inspecting Java class signatures',
+    'Checking combat module indicators',
+    'Analyzing crystal placement timing',
+    'Reviewing shield interaction patterns',
+    'Checking totem swap intervals',
+    'Inspecting inventory action sequences',
+    'Analyzing anchor input timing',
+    'Checking repeated key patterns',
+    'Reviewing item selection intervals',
+    'Correlating client signature matches',
+    'Filtering generic signature matches',
+    'Checking rapid placement sequences',
+    'Comparing macro timing patterns',
+    'Reviewing attack and hit intervals'
 )
+$stages = @('Connecting to Java runtime') + @(Get-Random -InputObject $stagePool -Count 7) + @('Preparing scan report')
 
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $previousStage = -1
@@ -35,30 +74,42 @@ try {
         $stageIndex = [Math]::Min($stages.Count - 1, [int][Math]::Floor($fraction * $stages.Count))
         $remaining = [int][Math]::Ceiling($DurationSeconds - $timer.Elapsed.TotalSeconds)
         if ($stageIndex -ne $previousStage) {
-            Write-Host ('  [SCAN] {0}...' -f $stages[$stageIndex]) -ForegroundColor DarkGray
+            Write-Host ('  {0:HH:mm:ss}  ' -f (Get-Date)) -ForegroundColor DarkGray -NoNewline
+            Write-Host 'SCAN  ' -ForegroundColor Cyan -NoNewline
+            Write-Host $stages[$stageIndex] -ForegroundColor Gray
             $previousStage = $stageIndex
         }
-        Write-Progress -Activity 'Automatic javaw.exe scan' -Status $stages[$stageIndex] -PercentComplete ([int]($fraction * 100)) -SecondsRemaining $remaining
+        Write-Progress -Activity $scannerName -Status $stages[$stageIndex] -PercentComplete ([int]($fraction * 100)) -SecondsRemaining $remaining
         Start-Sleep -Milliseconds 200
     }
 }
 finally {
     $timer.Stop()
-    Write-Progress -Activity 'Automatic javaw.exe scan' -Completed
+    Write-Progress -Activity $scannerName -Completed
 }
 
-$client = Get-Random -InputObject @('Prestige Client', 'Krypton Client', 'Doomsday Client')
-$maximum = if ($client -eq 'Prestige Client') { 20 } else { 30 }
+$client = Get-Random -InputObject @('198m Client', 'Prestige Client', 'Doomsday Client', 'Krypton Client', 'Argon Client')
 $results = @(
     [pscustomobject]@{
+        Group = 'CLIENT'
         Check = $client
-        Occurrences = Get-Random -Minimum 1 -Maximum ($maximum + 1)
+        Occurrences = 1
         Result = 'FLAG'
     }
 )
 
-foreach ($check in @('Auto Crystal', 'Auto Hit Crystal', 'Anchor Macro', 'Double Anchor', 'Shield Breaker', '198m', 'Hover Totem', 'Auto Totem', 'Totem Refill', 'Fast Place')) {
+foreach ($check in @('Anchor Macro', 'Double Anchor')) {
     $results += [pscustomobject]@{
+        Group = 'MACROS'
+        Check = $check
+        Occurrences = 1
+        Result = Get-Random -InputObject @('FLAG', 'FLAG', 'FLAG', 'GENERIC', 'FALSE POSITIVE')
+    }
+}
+
+foreach ($check in @('Auto Crystal', 'Auto Hit Crystal', 'Shield Breaker', 'Auto Totem', 'Hover Totem', 'Inv Totem', 'Totem Refill', 'Fast Place')) {
+    $results += [pscustomobject]@{
+        Group = 'MODULES'
         Check = $check
         Occurrences = Get-Random -Minimum 1 -Maximum 31
         Result = Get-Random -InputObject @('FLAG', 'FLAG', 'FLAG', 'GENERIC', 'FALSE POSITIVE')
@@ -66,19 +117,23 @@ foreach ($check in @('Auto Crystal', 'Auto Hit Crystal', 'Anchor Macro', 'Double
 }
 
 Write-Host ''
-Write-Host '  SCAN COMPLETE' -ForegroundColor Green
-Write-Host ('  Elapsed: {0:mm\:ss}' -f $timer.Elapsed) -ForegroundColor DarkGray
-Write-Host ''
-Write-Host ('  {0,-22} {1,11}   {2}' -f 'CHECK', 'OCCURRENCES', 'RESULT') -ForegroundColor Cyan
-Write-Host '  ------------------------------------------------------' -ForegroundColor DarkGray
-foreach ($row in $results) {
-    $color = switch ($row.Result) {
-        'FLAG' { 'Red' }
-        'GENERIC' { 'Yellow' }
-        'FALSE POSITIVE' { 'DarkGray' }
+Write-PanelBorder
+Write-PanelLine ('SCAN COMPLETE                                  ELAPSED  {0:mm\:ss}' -f $timer.Elapsed) Green
+Write-PanelBorder
+Write-PanelLine ('{0,-27} {1,5}   {2}' -f 'CHECK', 'COUNT', 'RESULT') DarkGray
+foreach ($group in @('CLIENT', 'MACROS', 'MODULES')) {
+    Write-PanelLine
+    Write-PanelLine $group Cyan
+    foreach ($row in @($results | Where-Object { $_.Group -eq $group })) {
+        Write-ResultRow $row
     }
-    Write-Host ('  {0,-22} {1,11}   {2}' -f $row.Check, $row.Occurrences, $row.Result) -ForegroundColor $color
 }
-Write-Host ''
-Write-Host ('  Verdict: FLAGS FOUND | {0}' -f $client) -ForegroundColor Red
+Write-PanelLine
+Write-PanelBorder
+$flagCount = @($results | Where-Object { $_.Result -eq 'FLAG' }).Count
+$genericCount = @($results | Where-Object { $_.Result -eq 'GENERIC' }).Count
+$falseCount = @($results | Where-Object { $_.Result -eq 'FALSE POSITIVE' }).Count
+Write-PanelLine ('SUMMARY  {0} flagged / {1} generic / {2} false positive checks' -f $flagCount, $genericCount, $falseCount) Gray
+Write-PanelLine ('CLIENT MATCH  {0}' -f $client) Red
+Write-PanelBorder
 Write-Host ''
