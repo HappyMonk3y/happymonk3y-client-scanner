@@ -2,6 +2,8 @@
 
 A console prop for scripted YouTube videos. All scan messages and results are fictional. It does not inspect Java, processes, memory, files, or the network, and it cannot detect cheating.
 
+The distributed PowerShell file contains a reversibly encoded copy of the script. Encoding changes how the source looks; it does not provide encryption, source secrecy, or real detection. Earlier readable versions also remain in this repository's history.
+
 ## Run locally
 
 Open PowerShell in this folder and run:
