@@ -37,6 +37,15 @@ function Write-ResultRow {
     Write-Host ' |' -ForegroundColor DarkCyan
 }
 
+function Write-ScanProgress {
+    param([ValidateRange(0, 100)][int]$Percent)
+    $barWidth = 44
+    $filled = [int][Math]::Floor($barWidth * $Percent / 100)
+    $bar = ('#' * $filled) + ('-' * ($barWidth - $filled))
+    $color = if ($Percent -eq 100) { 'Green' } else { 'Cyan' }
+    Write-Host ("`r  [{0}] {1,3}%" -f $bar, $Percent) -ForegroundColor $color -NoNewline
+}
+
 Write-Host ''
 Write-PanelBorder
 Write-PanelLine
@@ -72,21 +81,24 @@ try {
     while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
         $fraction = $timer.Elapsed.TotalSeconds / $DurationSeconds
         $stageIndex = [Math]::Min($stages.Count - 1, [int][Math]::Floor($fraction * $stages.Count))
-        $remaining = [int][Math]::Ceiling($DurationSeconds - $timer.Elapsed.TotalSeconds)
         if ($stageIndex -ne $previousStage) {
+            if ($previousStage -ge 0) {
+                Write-Host ("`r" + (' ' * 54) + "`r") -NoNewline
+            }
             Write-Host ('  {0:HH:mm:ss}  ' -f (Get-Date)) -ForegroundColor DarkGray -NoNewline
             Write-Host 'SCAN  ' -ForegroundColor Cyan -NoNewline
             Write-Host $stages[$stageIndex] -ForegroundColor Gray
             $previousStage = $stageIndex
         }
-        Write-Progress -Activity $scannerName -Status $stages[$stageIndex] -PercentComplete ([int]($fraction * 100)) -SecondsRemaining $remaining
+        Write-ScanProgress -Percent ([Math]::Min(99, [int][Math]::Floor($fraction * 100)))
         Start-Sleep -Milliseconds 200
     }
 }
 finally {
     $timer.Stop()
-    Write-Progress -Activity $scannerName -Completed
 }
+Write-ScanProgress -Percent 100
+Write-Host ''
 
 $client = Get-Random -InputObject @('198m Client', 'Prestige Client', 'Doomsday Client', 'Krypton Client', 'Argon Client')
 $results = @(

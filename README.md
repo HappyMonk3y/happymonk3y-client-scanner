@@ -12,7 +12,7 @@ Open PowerShell in this folder and run:
 
 Each run randomly takes 27-120 seconds, displays a different selection of progress messages, then shows a colored report. Administrator access is not required.
 
-The console uses a bordered header, timestamped progress lines, grouped client/macro/module results, colored status badges, and a final summary.
+The console uses a bordered header, timestamped progress lines, a filling progress bar without a time-remaining estimate, grouped client/macro/module results, colored status badges, and a final summary. The bar stays fully filled at 100% when the scan completes.
 
 ## Results
 
